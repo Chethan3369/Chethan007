@@ -1,66 +1,62 @@
 import { useEffect, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Suspense } from "react";
+import dynamic from "next/dynamic"; // Use if working in Next.js
 import Loading from "../Loading";
 import Model from "../Model";
-import { registerVevComponent } from "@vev/react"; // Import Vev registration utility
 
-gsap.registerPlugin(ScrollTrigger);
+// Only import gsap in a browser environment
+let gsap, ScrollTrigger;
+if (typeof window !== "undefined") {
+  gsap = require("gsap").gsap;
+  ScrollTrigger = require("gsap/ScrollTrigger").ScrollTrigger;
+  gsap.registerPlugin(ScrollTrigger);
+}
 
-const CanvasContainer = ({ opacityDuration = 0.5 }) => {
-  const canvasRef = useRef(null); // Reference for the canvas container
+const CanvasContainer = () => {
+  const canvasRef = useRef(null);
 
   useEffect(() => {
+    if (!ScrollTrigger || !canvasRef.current) return;
+
     const canvasElement = canvasRef.current;
 
-    // Create the ScrollTrigger for controlling the canvas visibility
+    // Create the ScrollTrigger for canvas visibility
     const scrollTriggerInstance = ScrollTrigger.create({
-      trigger: ".seven-section", // Trigger the animation based on the seven section
-      start: "bottom bottom", // When the bottom of the seven-section hits the top of the viewport
+      trigger: ".seven-section", // Animation triggers based on this section
+      start: "bottom bottom", // Start when the bottom of the section hits the bottom of the viewport
       onEnter: () => {
-        gsap.to(canvasElement, { opacity: 0, duration: opacityDuration }); // Fade out
+        gsap.to(canvasElement, { opacity: 0, duration: 0.5 }); // Fade out
       },
       onLeaveBack: () => {
-        gsap.to(canvasElement, { opacity: 1, duration: opacityDuration }); // Fade in when scrolling back up
+        gsap.to(canvasElement, { opacity: 1, duration: 0.5 }); // Fade in when scrolling back up
       },
     });
 
     return () => {
-      scrollTriggerInstance.kill(); // Clean up on component unmount
+      scrollTriggerInstance.kill(); // Cleanup on unmount
     };
-  }, [opacityDuration]);
+  }, []);
 
   return (
-    <Canvas
-      ref={canvasRef}
-      style={{ opacity: 1 }} // Initial opacity
-      camera={{
-        position: [4.742922067308307, 2.2387122409413784, 1.2218255872664914],
-      }}
-      shadows
-    >
-      <OrbitControls enablePan={false} enableRotate={true} enableZoom={false} />
-      <Suspense fallback={<Loading />}>
-        <Model />
-      </Suspense>
-    </Canvas>
+    <div>
+      <Canvas
+        ref={canvasRef}
+        style={{ opacity: 1, height: "100%", width: "100%" }} // Initial styles
+        camera={{
+          position: [4.7429, 2.2387, 1.2218], // Camera position
+        }}
+        shadows
+      >
+        <OrbitControls enablePan={false} enableRotate={true} enableZoom={false} />
+        <Suspense fallback={<Loading />}>
+          <Model />
+        </Suspense>
+      </Canvas>
+    </div>
   );
 };
 
-// Register the component with Vev
-registerVevComponent(CanvasContainer, {
-  name: "3D Canvas Container",
-  description: "A 3D canvas container with fade-in and fade-out effects triggered by scroll.",
-  props: {
-    opacityDuration: {
-      type: "number",
-      default: 0.5,
-      description: "The duration of the fade-in and fade-out animations.",
-    },
-  },
-});
-
+// Export for Vev editor registration
 export default CanvasContainer;
