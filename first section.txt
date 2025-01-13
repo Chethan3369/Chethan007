@@ -44,3 +44,11 @@ registerVevComponent(FirstSection, {
 });
 
 export default FirstSection;
+
+
+.gradient-text {
+  background: linear-gradient(to right, #C99CFF, #FF99CC);
+  -webkit-background-clip: text; /* Ensure the text clip works in webkit browsers */
+  background-clip: text; /* For modern browsers */
+  color: transparent; /* Make the text transparent to show the gradient */
+}
