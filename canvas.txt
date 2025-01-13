@@ -1,0 +1,66 @@
+import { useEffect, useRef } from "react";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { Suspense } from "react";
+import Loading from "../Loading";
+import Model from "../Model";
+import { registerVevComponent } from "@vev/react"; // Import Vev registration utility
+
+gsap.registerPlugin(ScrollTrigger);
+
+const CanvasContainer = ({ opacityDuration = 0.5 }) => {
+  const canvasRef = useRef(null); // Reference for the canvas container
+
+  useEffect(() => {
+    const canvasElement = canvasRef.current;
+
+    // Create the ScrollTrigger for controlling the canvas visibility
+    const scrollTriggerInstance = ScrollTrigger.create({
+      trigger: ".seven-section", // Trigger the animation based on the seven section
+      start: "bottom bottom", // When the bottom of the seven-section hits the top of the viewport
+      onEnter: () => {
+        gsap.to(canvasElement, { opacity: 0, duration: opacityDuration }); // Fade out
+      },
+      onLeaveBack: () => {
+        gsap.to(canvasElement, { opacity: 1, duration: opacityDuration }); // Fade in when scrolling back up
+      },
+    });
+
+    return () => {
+      scrollTriggerInstance.kill(); // Clean up on component unmount
+    };
+  }, [opacityDuration]);
+
+  return (
+    <Canvas
+      ref={canvasRef}
+      style={{ opacity: 1 }} // Initial opacity
+      camera={{
+        position: [4.742922067308307, 2.2387122409413784, 1.2218255872664914],
+      }}
+      shadows
+    >
+      <OrbitControls enablePan={false} enableRotate={true} enableZoom={false} />
+      <Suspense fallback={<Loading />}>
+        <Model />
+      </Suspense>
+    </Canvas>
+  );
+};
+
+// Register the component with Vev
+registerVevComponent(CanvasContainer, {
+  name: "3D Canvas Container",
+  description: "A 3D canvas container with fade-in and fade-out effects triggered by scroll.",
+  props: {
+    opacityDuration: {
+      type: "number",
+      default: 0.5,
+      description: "The duration of the fade-in and fade-out animations.",
+    },
+  },
+});
+
+export default CanvasContainer;
