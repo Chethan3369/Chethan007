@@ -1,11 +1,8 @@
 import React, { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { registerVevComponent } from "@vev/react";
+import "./Control.css"; // Ensure the CSS is correctly imported
 
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
+let gsap; // Declare GSAP variable to initialize it dynamically
 
 const ControlNumi = ({
   headingText = "Always On Control",
@@ -18,69 +15,78 @@ const ControlNumi = ({
   const sectionRef = useRef(null);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    // Ensure GSAP and ScrollTrigger are loaded only in the browser environment
+    if (typeof window !== "undefined") {
+      (async () => {
+        const { gsap: loadedGsap } = await import("gsap");
+        const { ScrollTrigger } = await import("gsap/ScrollTrigger");
+        loadedGsap.registerPlugin(ScrollTrigger);
+        gsap = loadedGsap;
 
-    const arrowTranslateY = 50;
+        const arrowTranslateY = 50;
 
-    // Arrows animation
-    arrowsRef.current.forEach((arrow) => {
-      gsap.fromTo(
-        arrow,
-        { opacity: 0, y: arrowTranslateY },
-        {
-          opacity: 1,
-          y: 0,
-          scrollTrigger: {
-            trigger: arrow,
-            start: "top 80%",
-            end: "top 80%",
-            scrub: true,
-          },
-        }
-      );
-    });
+        // Arrows animation
+        arrowsRef.current.forEach((arrow) => {
+          gsap.fromTo(
+            arrow,
+            { opacity: 0, y: arrowTranslateY },
+            {
+              opacity: 1,
+              y: 0,
+              scrollTrigger: {
+                trigger: arrow,
+                start: "top 80%",
+                end: "top 80%",
+                scrub: true,
+              },
+            }
+          );
+        });
 
-    // Text animation
-    textsRef.current.forEach((text) => {
-      gsap.fromTo(
-        text,
-        { opacity: 0, y: arrowTranslateY },
-        {
-          opacity: 1,
-          y: 0,
-          scrollTrigger: {
-            trigger: text,
-            start: "top 70%",
-            end: "top 70%",
-            scrub: true,
-          },
-        }
-      );
-    });
+        // Text animation
+        textsRef.current.forEach((text) => {
+          gsap.fromTo(
+            text,
+            { opacity: 0, y: arrowTranslateY },
+            {
+              opacity: 1,
+              y: 0,
+              scrollTrigger: {
+                trigger: text,
+                start: "top 70%",
+                end: "top 70%",
+                scrub: true,
+              },
+            }
+          );
+        });
 
-    // Whole section animation
-    const sectionAnimation = gsap.fromTo(
-      sectionRef.current,
-      { scale: 1.5, opacity: 0 },
-      {
-        scale: 1,
-        opacity: 1,
-        duration: 2,
-        paused: true,
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top center",
-          end: "bottom center",
-          scrub: false,
-          onEnter: () => sectionAnimation.restart(),
-          onLeaveBack: () => sectionAnimation.reverse(),
-        },
-      }
-    );
+        // Whole section animation
+        const sectionAnimation = gsap.fromTo(
+          sectionRef.current,
+          { scale: 1.5, opacity: 0 },
+          {
+            scale: 1,
+            opacity: 1,
+            duration: 2,
+            paused: true,
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: "top center",
+              end: "bottom center",
+              scrub: false,
+              onEnter: () => sectionAnimation.restart(),
+              onLeaveBack: () => sectionAnimation.reverse(),
+            },
+          }
+        );
 
-    return () => {
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
-    };
+        // Clean up on unmount
+        return () => {
+          ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+        };
+      })();
+    }
   }, []);
 
   return (
