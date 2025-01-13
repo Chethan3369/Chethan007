@@ -3,7 +3,9 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { registerVevComponent } from "@vev/react";
 
-gsap.registerPlugin(ScrollTrigger);
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 const ControlNumi = ({
   headingText = "Always On Control",
@@ -16,6 +18,8 @@ const ControlNumi = ({
   const sectionRef = useRef(null);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const arrowTranslateY = 50;
 
     // Arrows animation
