@@ -1,0 +1,11 @@
+const FirstSection = () => {
+  return (
+    <div>
+      <h1>NUMI 2.0</h1>
+      <h3>Elevate your daily routine</h3>
+      <p>The Ultimate Bathroom Upgrade.</p>
+    </div>
+  );
+};
+
+export default FirstSection;
